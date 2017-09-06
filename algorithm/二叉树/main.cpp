@@ -260,6 +260,107 @@ bool similiar(BTNode *b1, BTNode *b2)
     }
 }
 
+// 先序遍历非递归算法
+void preOrder1(BTNode *b)
+{
+    BTNode *st[MaxSize],*p;
+    int top = -1;
+    top++;
+    st[top] = b;//根节点入栈
+    while(top>-1)//栈不为空时循环
+    {
+        p = st[top];//栈顶元素出栈,并访问该元素
+        top--;
+        printf("%c ",p->data);
+        if(p->rchild != NULL)//右孩子节点入栈（把握好后入先出的规则）
+        {
+            top++;
+            st[top] = p->rchild;
+        }
+        if(p->lchild != NULL)//左孩子节点入栈
+        {
+            top++;
+            st[top] = p->lchild;
+        }
+    }
+}
+
+// 层次遍历，队列方式实现
+void LevelOrder(BTNode *b)
+{
+    BTNode *p;
+    BTNode *qu[MaxSize];
+    int front,rear;
+    front = rear = -1;//环形队列
+    rear++;//根节点入队
+    qu[rear] = b;
+    while(front != rear)
+    {
+        front++;
+        p = qu[front];
+        printf("%c ",p->data);
+        if(p->lchild != NULL)
+        {
+            rear = (rear+1)%MaxSize;
+            qu[rear] = p->lchild;
+        }
+        if(p->rchild != NULL)
+        {
+            rear = (rear+1)%MaxSize;
+            qu[rear] = p->rchild;
+        }
+    }
+}
+
+// 路径之逆，采用层次遍历+队列；
+void reverseLink(BTNode *b)
+{
+    typedef struct NodeNew{
+        BTNode* pst;
+        int front;
+    }BTNodeNew;
+
+    BTNodeNew st[MaxSize], p;
+    int rear, stave;
+    rear = -1;
+    rear++;
+    st[rear].pst = b;
+    st[rear].front = -1;
+    p = st[rear];
+    stave = rear;
+
+    // 层次遍历，入队
+    while((p.pst->lchild!=NULL)||(p.pst->rchild!=NULL))
+    {
+        if(p.pst->lchild!=NULL)
+        {
+            rear++;
+            st[rear].pst = p.pst->lchild;
+            st[rear].front = stave;
+        }
+        if(p.pst->rchild!=NULL)
+        {
+            rear++;
+            st[rear].pst = p.pst->rchild;
+            st[rear].front = stave;
+        }
+        stave++;
+        p = st[stave];
+    }
+
+    for(int i = st[rear].front+1; i <= rear; i++)
+    {
+        int j = i;
+        printf("%c ", st[j].pst->data);
+        do{
+            j = st[j].front;
+            printf("%c ", st[j].pst->data);
+        }while(st[j].front != -1);
+        putchar('\n');
+    }
+
+}
+
 int main()
 {
     char a[] = "A(B(D(,G)),C(E,F))";
@@ -276,25 +377,43 @@ int main()
     {
         printf("%c\n",get->data);
     }
+    // 获取二叉树的深度
     depth = BTNodeDepth(b);
     printf("depth = %d\n",depth);
+    // 遍历所有的叶子节点
     DispBTNode(b);
-    putchar('\n');
+    putchar('\n');//由于函数中没有加回车，所以此处需要额外加上回车
+    // 前序递归遍历
     preOrder(b);
     putchar('\n');
+    // 中序递归遍历
     midOrder(b);
     putchar('\n');
+    // 后序递归遍历
     afterOrder(b);
     putchar('\n');
+    // 结点计数
     printf("%d\n",count(b));
+    // 显示所有的叶子结点
     DispLeafNode(b);
     putchar('\n');
     level = Level(b,'G',1);
+    // 确定对应元素所在的层
     printf("%d",level);
     putchar('\n');
+    // 判断两个树是否相似
     if(similiar(b,b2))
     {
         printf("they are similiar!");
     }
+    // 前序非递归遍历:
+    preOrder1(b);
+    putchar('\n');
+    // 层次遍历，队列方式实现
+    LevelOrder(b);
+    putchar('\n');
+    //层次遍历，用队列实现路径之逆
+    reverseLink(b);
+
     return 0;
 }
